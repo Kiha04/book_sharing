@@ -1,29 +1,24 @@
-// src/utils/googlesheets.ts 
-
-import { google } from "googleapis";
+//utils/googlesheets.ts 
+import { google, sheets_v4 } from "googleapis";
 
 // 認証クライアントを一度生成したら再利用（キャッシュ）する
-let sheetsClient: google.sheets_v4.Sheets | null = null;
+let sheetsClient: sheets_v4.Sheets | null = null;
 
 export async function getSheetsClient() {
   if (sheetsClient) {
     return sheetsClient;
   }
 
-  try {
-    // Vercelに設定した GOOGLE_SERVICE_KEY のJSON文字列をパース
-    const credentials = JSON.parse(process.env.GOOGLE_SERVICE_KEY as string);
+  const auth = new google.auth.JWT(
+    process.env.GOOGLE_CLIENT_EMAIL,
+    undefined,
+    process.env.GOOGLE_PRIVATE_KEY?.replace(/\\n/g, "\n"),
+    ["https://www.googleapis.com/auth/spreadsheets"]
+  );
 
-    // GoogleAuth を使うのがより現代的で推奨される方法
-    const auth = new google.auth.GoogleAuth({
-      credentials,
-      scopes: ["https://www.googleapis.com/auth/spreadsheets"],
-    });
-
-    const client = google.sheets({ version: "v4", auth });
-    sheetsClient = client; // 作成したクライアントをキャッシュ
-    return client;
-
+  sheetsClient = google.sheets({ version: "v4", auth });
+  return sheetsClient;
+}
   } catch (error) {
     console.error("❌ Google Sheets Clientの認証に失敗しました:", error);
     throw new Error("Google Sheets Clientの認証に失敗しました。環境変数を確認してください。");
