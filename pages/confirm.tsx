@@ -1,4 +1,4 @@
-// src/pages/confirm.tsx (エラー修正版)
+//pages/confirm.tsx
 
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
@@ -6,7 +6,6 @@ import axios from "axios"; // isAxiosErrorを使わない場合は、axiosのみ
 import styles from '../styles/Form.module.css';
 import { FaCheckCircle, FaArrowLeft } from "react-icons/fa";
 
-// 型定義から id を削除し、isbn のみとする
 type BookConfirmationData = {
   isbn?: string;
   title: string;
@@ -47,24 +46,19 @@ export default function ConfirmPage() {
 
     try {
       if (book.from === "donate") {
-        // donate フロー (変更なし)
         if (!book.isbn || !book.title) {
           throw new Error("登録にはISBNとタイトルが必要です。");
         }
         await axios.post("/api/donate", book);
         console.log("/api/donate successful");
 
-      } else if (book.from === "receive") {
-        // ★★★ ここから修正 ★★★
-        // IDの代わりにISBNをチェック
+      } else if (book.from === "receive") 
         if (!book.isbn || book.isbn.trim() === "") {
            console.error("Receive validation failed: Missing ISBN", book);
            throw new Error("受け取り処理に必要な本のISBNがありません。");
         }
-        // APIに送信するペイロードを { id: ... } から { isbn: ... } に変更
         await axios.post("/api/receive", { isbn: book.isbn });
         console.log("/api/receive successful");
-        // ★★★ 修正ここまで ★★★
 
       } else {
         throw new Error("不明な操作タイプです。");
@@ -110,7 +104,6 @@ export default function ConfirmPage() {
         <div className={styles.confirmDetails}>
           {book.thumbnail && (
             <img
-              // (推奨) httpをhttpsに変換してMixed Content警告を抑制
               src={book.thumbnail.replace('http://', 'https://')}
               alt={book.title}
               className={styles.thumbnailPreview}
