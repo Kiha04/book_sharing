@@ -1,13 +1,16 @@
 import { google } from "googleapis";
 
-export async function getSheetsClient() {
-  const auth = new google.auth.GoogleAuth({
-    credentials: JSON.parse(process.env.GOOGLE_SERVICE_KEY as string),
-    scopes: ["https://www.googleapis.com/auth/spreadsheets"],
-  });
+export function getSheetsClient() {
+  const auth = new google.auth.JWT(
+    process.env.GOOGLE_CLIENT_EMAIL,
+    undefined,
+    process.env.GOOGLE_PRIVATE_KEY?.replace(/\\n/g, "\n"),
+    ["https://www.googleapis.com/auth/spreadsheets"]
+  );
 
   return google.sheets({ version: "v4", auth });
 }
+
 
 export async function appendBookRow(
   spreadsheetId: string,
