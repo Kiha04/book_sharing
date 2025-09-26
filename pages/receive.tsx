@@ -120,7 +120,7 @@ export default function ReceivePage() {
           <h3 className={styles.resultsTitle}>検索結果</h3>
             {results.map((book) => (
             // `key` にはユニークな `book.id` または `book.isbn` を使用
-            <div key={book.id} className={styles.searchResultItem}>
+            <div key={book.isbn} className={styles.searchResultItem}>
               {book.thumbnail && (
                 <img
                   src={book.thumbnail.replace('http://', 'https://')} // Mixed Content対策
