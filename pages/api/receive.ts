@@ -10,7 +10,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   
   try {
     const payload = { ...req.body, action: 'receive' };
-    const response = await axios.post(GAS_URL, payload, { maxRedirects: 5 });
+    const response = await axios.post(GAS_URL, payload);
     res.status(200).json(response.data);
   } catch (error: any) {
     console.error("API Error (receive):", error);
