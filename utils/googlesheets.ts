@@ -10,8 +10,7 @@ export async function getSheetsClient() {
 
   try {
     const clientEmail = process.env.GOOGLE_CLIENT_EMAIL;
-    const privateKey = process.env.GOOGLE_PRIVATE_KEY;
-
+    const privateKey = process.env.GOOGLE_PRIVATE_KEY?.replace(/\\n/g, '\n')
     if (!clientEmail || !privateKey) {
       throw new Error("必要なGoogle認証用の環境変数が設定されていません。");
     }
