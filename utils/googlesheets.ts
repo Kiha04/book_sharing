@@ -1,27 +1,37 @@
-// src/utils/googlesheets.ts (この内容に完全に置き換えてください)
+//utils/googlesheets.ts
 
-import { google, sheets_v4 } from "googleapis"; // sheets_v4 もインポート
+import { google, sheets_v4 } from "googleapis";
 
-// 認証クライアントを一度生成したら再利用（キャッシュ）する
 let sheetsClient: sheets_v4.Sheets | null = null;
 
 export async function getSheetsClient(): Promise<sheets_v4.Sheets> {
-  // キャッシュがあれば再利用
   if (sheetsClient) {
     return sheetsClient;
   }
 
   try {
-    const credentials = JSON.parse(process.env.GOOGLE_SERVICE_KEY as string);
+    // 3つの別々の環境変数を使用
+    const clientEmail = process.env.GOOGLE_CLIENT_EMAIL;
+    const privateKey = process.env.GOOGLE_PRIVATE_KEY;
+    const projectId = process.env.GOOGLE_PROJECT_ID;
 
-    // GoogleAuth を使うのがより現代的で推奨される方法
-    const auth = new google.auth.GoogleAuth({
-      credentials,
+    // いずれかの変数が設定されていない場合はエラー
+    if (!clientEmail || !privateKey || !projectId) {
+      throw new Error("必要なGoogle認証用の環境変数が設定されていません。");
+    }
+
+    // JWT (JSON Web Token) を使って認証
+    const auth = new google.auth.JWT({
+      email: clientEmail,
+      // Vercelの環境変数では改行が \\n として扱われるため、\n に戻す
+      key: privateKey.replace(/\\n/g, "\n"),
       scopes: ["https://www.googleapis.com/auth/spreadsheets"],
+      // projectId も指定するとより確実
+      // projectId: projectId, 
     });
 
     const client = google.sheets({ version: "v4", auth });
-    sheetsClient = client; // 作成したクライアントをキャッシュ
+    sheetsClient = client;
     return client;
 
   } catch (error) {
@@ -30,7 +40,7 @@ export async function getSheetsClient(): Promise<sheets_v4.Sheets> {
   }
 }
 
-// --- これ以降の関数はエラーハンドリングを追加 ---
+// --- これ以降の関数 (appendBookRow, readBooks) は変更ありません ---
 
 export async function appendBookRow(
   spreadsheetId: string,
@@ -40,11 +50,9 @@ export async function appendBookRow(
     const sheets = await getSheetsClient();
     await sheets.spreadsheets.values.append({
       spreadsheetId,
-      range: "Books!A:E", // シート名を確認
+      range: "Books!A:E",
       valueInputOption: "USER_ENTERED",
-      requestBody: {
-        values: [values],
-      },
+      requestBody: { values: [values] },
     });
   } catch (error: any) {
     console.error("スプレッドシートへの行追加に失敗しました:", error.message);
@@ -57,7 +65,7 @@ export async function readBooks(spreadsheetId: string) {
     const sheets = await getSheetsClient();
     const res = await sheets.spreadsheets.values.get({
       spreadsheetId,
-      range: "Books!A:E", // シート名を確認
+      range: "Books!A:E",
     });
     return res.data.values || [];
   } catch (error: any) {
