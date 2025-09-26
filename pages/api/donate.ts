@@ -1,6 +1,18 @@
+// src/pages/api/donate.ts
+import { google } from "googleapis";
 import type { NextApiRequest, NextApiResponse } from "next";
-import prisma from "../../utils/database";
-import { Prisma } from '@prisma/client';
+
+async function getSheetsClient() {
+  const credentials = JSON.parse(process.env.GOOGLE_SERVICE_KEY as string);
+
+  const auth = new google.auth.JWT({
+    email: credentials.client_email,
+    key: credentials.private_key.replace(/\\n/g, "\n"),
+    scopes: ["https://www.googleapis.com/auth/spreadsheets"],
+  });
+
+  return google.sheets({ version: "v4", auth });
+}
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== "POST") {
@@ -8,69 +20,55 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     return res.status(405).json({ message: "Method Not Allowed" });
   }
 
-  console.log("API /api/donate received body:", req.body);
   const { isbn, title, author, thumbnail } = req.body;
-
-  let errors: string[] = [];
-  if (!title) {
-    errors.push("タイトルは必須です。");
-  }
-  if (!author) {
-    console.warn("API /api/donate: Author is missing, proceeding anyway...");
-  }
-  if (!isbn) {
-    errors.push("ISBNは必須です。");
-  }
-
-  if (errors.length > 0) {
-    console.error("API /api/donate validation errors:", errors);
-    return res.status(400).json({ error: "入力内容が正しくありません。", details: errors });
+  if (!isbn || !title) {
+    return res.status(400).json({ error: "ISBN と タイトルは必須です" });
   }
 
   try {
-    const existingBook = await prisma.book.findUnique({ where: { isbn } });
+    const sheets = await getSheetsClient();
+    const spreadsheetId = process.env.SPREADSHEET_ID as string;
 
-    let resultBook;
-    if (existingBook) {
-      console.log(`API /api/donate: Updating stock for ISBN: ${isbn}`);
-      resultBook = await prisma.book.update({
-        where: { isbn },
-        data: {
-          stock: { increment: 1 },
-          ...(thumbnail && { thumbnail }),
-        },
-      });
-      console.log(`API /api/donate: Stock updated for Book ID: ${resultBook.id}`);
-    } else {
-      console.log(`API /api/donate: Creating new book for ISBN: ${isbn}`);
-      resultBook = await prisma.book.create({
-        data: {
-          isbn,
-          title,
-          author: author || "著者不明",
-          thumbnail: thumbnail || null,
-          stock: 1,
-        },
-      });
-      console.log(`API /api/donate: New book created with ID: ${resultBook.id}`);
-    }
-
-    return res.status(200).json({ message: "本の登録処理を受け付けました。", book: resultBook });
-  } catch (error: any) {
-    console.error("❌ API /api/donate Error:", error);
-
-    if (error instanceof Prisma.PrismaClientKnownRequestError) {
-      if (error.code === 'P2002') {
-        return res.status(409).json({
-          error: 'ユニーク制約違反が発生しました。登録情報が正しいかどうかをもう一度ご確認の上、お手数ですが最初からやり直してください。',
-          details: error.meta,
-        });
-      }
-    }
-
-    return res.status(500).json({
-      error: "サーバー内部でエラーが発生しました。登録情報が正しいかどうかをもう一度ご確認の上、お手数ですが最初からやり直してください。",
-      message: error.message,
+    // 既存データの取得
+    const result = await sheets.spreadsheets.values.get({
+      spreadsheetId,
+      range: "Books!A2:E",
     });
+
+    const rows = result.data.values || [];
+    let foundRow = -1;
+    let stock = 0;
+
+    rows.forEach((r, i) => {
+      if (r[0] === isbn) {
+        foundRow = i + 2; // ヘッダーがあるので +2
+        stock = parseInt(r[4] || "0", 10);
+      }
+    });
+
+    if (foundRow > -1) {
+      // 既存本 → 在庫数を +1
+      await sheets.spreadsheets.values.update({
+        spreadsheetId,
+        range: `Books!E${foundRow}`,
+        valueInputOption: "RAW",
+        requestBody: { values: [[stock + 1]] },
+      });
+      return res.status(200).json({ message: "在庫を +1 更新しました", isbn, stock: stock + 1 });
+    } else {
+      // 新規本を追加
+      await sheets.spreadsheets.values.append({
+        spreadsheetId,
+        range: "Books!A:E",
+        valueInputOption: "RAW",
+        requestBody: {
+          values: [[isbn, title, author || "著者不明", thumbnail || "", 1]],
+        },
+      });
+      return res.status(200).json({ message: "新しい本を追加しました", isbn, stock: 1 });
+    }
+  } catch (error: any) {
+    return res.status(500).json({ error: error.message, details: error });
+
   }
 }
