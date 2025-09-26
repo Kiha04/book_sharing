@@ -1,4 +1,4 @@
-// src/pages/api/donate.ts
+//pages/api/donate.ts
 import { google } from "googleapis";
 import type { NextApiRequest, NextApiResponse } from "next";
 
