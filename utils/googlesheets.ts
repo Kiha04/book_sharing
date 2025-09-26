@@ -1,4 +1,4 @@
-// src/utils/googlesheets.ts (推奨版)
+// src/utils/googlesheets.ts 
 
 import { google } from "googleapis";
 
