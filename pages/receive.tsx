@@ -128,7 +128,8 @@ export default function ReceivePage() {
                   className={styles.resultThumbnail}
                 />
               )}
-              <div className={styles.resultDetails}>
+             <div className={styles.resultDetails}>
+                {book.isbn && <p className={styles.bookMeta}>ISBN: {book.isbn}</p>}
                 <p className={styles.bookTitle}><strong>{book.title}</strong></p>
                 <p className={styles.bookAuthor}>著者: {book.author}</p>
                 <p className={styles.bookMeta}>在庫: {book.stock > 0 ? `${book.stock} 冊` : <span className={styles.stockUnavailable}>在庫なし</span>}</p>
