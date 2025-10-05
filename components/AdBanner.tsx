@@ -22,9 +22,8 @@ const ADS_CONFIG: AdConfig[] = [
   {
     id: 'ad001',
     type: 'image',
-    imageUrl: '/images/ads/meio-u-logo.png', // public/images/ads/ に配置
-    altText: '名桜大学',
-    linkUrl: 'https://www.meio-u.ac.jp/',
+    imageUrl: '/images/ads/questionnaire.png', // public/images/ads/ に配置
+    altText: 'アンケート',
     isExternal: false,
     weight: 5,
   },
