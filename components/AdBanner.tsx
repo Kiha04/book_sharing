@@ -25,7 +25,7 @@ const ADS_CONFIG: AdConfig[] = [
     imageUrl: '/images/ads/questionnaire.png', // public/images/ads/ に配置
     altText: 'アンケート',
     isExternal: false,
-    weight: 5,
+    weight: 3,
   },
   {
     id: 'ad002',
@@ -34,7 +34,7 @@ const ADS_CONFIG: AdConfig[] = [
     altText: '名桜ウェルナビ',
     linkUrl: 'https://www.meio-u.ac.jp/welnavi/',
     isExternal: false,
-    weight: 5,
+    weight: 1,
   },
   // 必要に応じて広告を追加
 ];
