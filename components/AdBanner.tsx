@@ -1,8 +1,8 @@
 // src/components/AdBanner.tsx
 
-import React, { useState, useEffect, useRef, JSX } from 'react'; // JSX 型のインポートは通常不要
+import React, { useState, useEffect, useRef, JSX } from 'react';
 import Link from 'next/link';
-import styles from '../styles/AdBanner.module.css'; // ラッパーとタイトルのスタイルも含む
+import styles from '../styles/AdBanner.module.css';
 import { FaVolumeMute, FaVolumeUp } from 'react-icons/fa';
 
 // --- 型定義 ---
