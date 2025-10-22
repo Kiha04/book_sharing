@@ -183,6 +183,38 @@
   flex-wrap: wrap; /* 折り返し */
 }
 
+/* 同意チェックボックスのラッパー */
+.consentCheckboxWrapper {
+  display: flex;
+  align-items: flex-start; /* チェックボックスとテキストを上揃え */
+  margin: 1.5rem 0; /* 上下のマージン */
+  padding: 1rem;
+  background-color: var(--light-gray-bg, #f8f9fa); /* 背景色を少し変える */
+  border: 1px solid var(--secondary-color, #f0ad4e); /* 注意を促す枠線 */
+  border-radius: var(--input-border-radius, 4px);
+}
+
+/* チェックボックス自体のスタイル (ブラウザデフォルトを少し調整) */
+.consentCheckbox {
+  margin-top: 0.2em; /* テキストとの位置調整 */
+  margin-right: 0.75rem; /* ラベルとの間隔 */
+  width: 1.2em; /* サイズ調整 */
+  height: 1.2em;
+  flex-shrink: 0; /* 縮まないように */
+}
+
+/* ラベルのスタイル */
+.consentLabel {
+  font-size: 0.9rem; /* 少し小さめの文字 */
+  line-height: 1.5;
+  color: var(--muted-text-color, #6c757d);
+  cursor: pointer; /* クリック可能を示す */
+}
+/* ラベル内のアイコンの位置調整 (任意) */
+.consentLabel svg {
+  vertical-align: middle;
+}
+
 /* --- メッセージ表示 --- */
 .error,
 .infoMessage,
